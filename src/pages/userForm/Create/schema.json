@@ -1,0 +1,220 @@
+{
+    "name": "FpDemo",
+    "propsSchema": {
+      "type": "object",
+      "properties": {
+        "formTitle": {
+          "title": "系统维护保养巡检记录表",
+          "type": "object"
+        },
+        "pointName": {
+          "title": "点位名称",
+          "type": "string"
+        },
+        "pointAddress": {
+          "title": "点位地址",
+          "type": "string"
+        },
+        "inspcCompany": {
+          "title": "巡检单位",
+          "type": "string"
+        },
+        "assetList": {
+          "title": "设备统计",
+          "description": "填入用户在该点位的设备类型及数量",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "properties": {
+              "device": {
+                "title": "设备信息",
+                "description": "填入设备类型及数量",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "inspcDetailList": {
+          "title": "常规巡检详情",
+          "description": "逐项填入巡检项情况及处理结果",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "properties": {
+              "itemContent": {
+                "title": "巡检内容",
+                "description": "填入巡检内容",
+                "type": "string"
+              },
+              "itemState": {
+                "title": "本次情况",
+                "description": "选择本次巡检情况",
+                "type": "string",
+                "enum": ["Y", "N"],
+                "enumNames": ["正常", "不正常"],
+                "ui:widget": "radio"
+              },
+              "itemResult": {
+                "title": "处理结果",
+                "description": "填入巡检结果",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "feedback": {
+          "title": "确认内容",
+          "description": "填入确认签字等内容",
+          "type": "object",
+          "properties": {
+            "inspcResult": {
+              "title": "巡检结论",
+              "type": "string"
+            },
+            "inspcDate": {
+              "title": "巡检日期",
+              "format": "dateTime",
+              "type": "string"
+            },
+            "userConfirm": {
+              "title": "支行确认",
+              "type": "string"
+            },
+            "engineer": {
+              "title": "工程师",
+              "type": "string"
+            }
+          },
+          "required": ["inspcResult","inspcDate","userConfirm","engineer"]
+        }
+      },
+      "required": ["pointName","pointAddress","inspcCompany"]
+    },
+    "uiSchema": {
+      "pointName": {
+        "ui:width": "96%"
+      },
+      "pointAddress": {
+        "ui:width": "96%"
+      },
+      "inspcCompany": {
+        "ui:width": "96%"
+      },
+      "assetList": {
+        "ui:options": {
+          "foldable": true,
+          "hideDelete": "{{rootValue.length === 1}}"
+        },
+        "items": {
+          "device": {
+            "ui:widget": "textarea",
+            "ui:disabled": "{{rootValue.num === 3}}"
+          }
+        },
+        "ui:extraButtons": [
+          {
+            "text": "复制",
+            "icon": "copy",
+            "callback": "copyLast"
+          }
+        ]
+      },
+      "inspcDetailList": {
+        "ui:options": {
+          "foldable": true,
+          "hideDelete": "{{rootValue.length === 1}}"
+        },
+        "items": {
+          "itemContent": {
+            "ui:disabled": "{true}",
+            "ui:width": "35%"
+          },
+          "itemState": {
+            "ui:width": "30%"
+          },
+          "itemResult": {
+            "ui:disabled": "{{rootValue.num === 20}}",
+            "ui:width": "35%"
+          }
+        },
+        "ui:extraButtons": [
+          {
+            "text": "复制",
+            "icon": "copy",
+            "callback": "copyLast"
+          }
+        ]
+      },
+      "feedback": {
+        "inspcResult": {
+          "ui:width": "50%"
+        },
+        "inspcDate": {
+          "ui:widget": "date",
+          "ui:width": "50%"
+        },
+        "userConfirm": {
+          "ui:width": "50%"
+        },
+        "engineer": {
+          "ui:width": "50%"
+        }
+      }
+    },
+    "formData": {
+      "inspcCompany": "北京金城恒泰安防科技有限公司",
+      "assetList": [
+        {
+          "device": "双监探测器（ ）个"
+        },
+        {
+          "device": "网络录像机（ ）台，模拟录像机（ ）台，硬盘共（ ）台"
+        },
+        {
+          "device": "模拟摄像机（ ）台，枪机（ ）台，半球（ ）台，针孔（ ）台\n网络摄像机（ ）台，枪机（ ）台，半球（ ）台，针孔（ ）台"
+        }
+      ],
+      "inspcDetailList": [
+        {
+          "itemContent": "检查摄像机图像清晰度",
+          "itemState": "Y",
+          "itemResult": "已修复"
+        },
+        {
+          "itemContent": "调整镜头角度，无死角",
+          "itemState": "N",
+          "itemResult": "已修复"
+        },
+        {
+          "itemContent": "录像机日期时间是否正常",
+          "itemState": "Y",
+          "itemResult": "已修复"
+        },
+        {
+          "itemContent": "录像保存时间",
+          "itemState": "Y",
+          "itemResult": "已修复"
+        },
+        {
+          "itemContent": "硬盘工作状态",
+          "itemState": "N",
+          "itemResult": "已修复"
+        },
+        {
+          "itemContent": "摄像机镜头、录像机清洁",
+          "itemState": "Y",
+          "itemResult": "已修复"
+        },
+        {
+          "itemContent": "线缆整理",
+          "itemState": "Y",
+          "itemResult": "已修复"
+        }
+      ]
+    }
+  }
+  
