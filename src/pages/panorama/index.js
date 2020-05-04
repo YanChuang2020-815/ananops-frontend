@@ -42,6 +42,24 @@ class PanoramaRoute extends Component {
                         loading: Loading
                     })}
                 />
+                <Route
+                    exact
+                    path="/cbd/panorama/addDevice"
+                    component={Loadable({
+                        loader: () => import(
+                            './addDevice/index'),
+                        loading: Loading
+                    })}
+                />
+                <Route
+                    exact
+                    path="/cbd/panorama/device"
+                    component={Loadable({
+                        loader: () => import(
+                            './device/index'),
+                        loading: Loading
+                    })}
+                />
             </Switch>
         );
     }

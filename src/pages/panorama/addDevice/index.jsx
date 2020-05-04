@@ -3,7 +3,7 @@ import { Form,Input,Select,Button,message,DatePicker,Tooltip,Icon,Upload } from 
 import axios from 'axios'
 import 'moment/locale/zh-cn';
 import  './index.styl'
-class OrderNew extends Component{
+class DeviceNew extends Component{
     constructor(props){
         super(props)
         this.state={
@@ -45,8 +45,24 @@ class OrderNew extends Component{
             console.log(fileList)
             values.attachmentIds = this.getAttachments(fileList);
         }
-        if(!getFieldValue('sceneName')){
-            message.error('请输入维修任务名称')
+        if(!getFieldValue('name')){
+            message.error('请输入设备名称')
+            return;
+        }
+        if(!getFieldValue('deviceId')){
+            message.error('请输入设备ID')
+            return;
+        }
+        if(!getFieldValue('manufacture')){
+            message.error('请输入设备生产商')
+            return;
+        }
+        if(!getFieldValue('model')){
+            message.error('请输入设备型号')
+            return;
+        }
+        if(!getFieldValue('type')){
+            message.error('请输入设备类型')
             return;
         }
         if(!getFieldValue('attachmentIds')){
@@ -57,7 +73,7 @@ class OrderNew extends Component{
       console.log(values)
       axios({
           method: 'POST',
-          url: '/rdc/rdcScene/save',
+          url: '/rdc/rdcDevice/save',
           headers: {
               'Content-Type': 'application/json',
               'deviceId': this.deviceId,
@@ -69,7 +85,7 @@ class OrderNew extends Component{
         if(res && res.status === 200){  
           console.log(res.data.result)
           alert("场景创建成功")
-          history.push('/cbd/panorama/scene')
+          history.push('/cbd/panorama/device')
         }
       })
       .catch(function (error) {
@@ -137,16 +153,72 @@ class OrderNew extends Component{
           >
             <Form.Item
               {...createFormItemLayout}
-              label="场景名称"
+              label="设备名称"
             >
-              {getFieldDecorator('sceneName',{
+              {getFieldDecorator('name',{
                 initialValue: id,
                 rules:[{
                   required:true,
-                  message:"请输入场景名称",
+                  message:"请输入设备名称",
                 }]
               })(
-                <Input placeholder="请输入场景名称" />
+                <Input placeholder="请输入设备名称" />
+              )}  
+            </Form.Item>
+            <Form.Item
+              {...createFormItemLayout}
+              label="设备ID"
+            >
+              {getFieldDecorator('deviceId',{
+                initialValue: id,
+                rules:[{
+                  required:true,
+                  message:"请输入设备Id",
+                }]
+              })(
+                <Input placeholder="请输入设备Id" />
+              )}  
+            </Form.Item>
+            <Form.Item
+              {...createFormItemLayout}
+              label="设备生产商"
+            >
+              {getFieldDecorator('manufacture',{
+                initialValue: id,
+                rules:[{
+                  required:true,
+                  message:"请输入设备生产商",
+                }]
+              })(
+                <Input placeholder="请输入设备生产商" />
+              )}  
+            </Form.Item>
+            <Form.Item
+              {...createFormItemLayout}
+              label="设备型号"
+            >
+              {getFieldDecorator('model',{
+                initialValue: id,
+                rules:[{
+                  required:true,
+                  message:"请输入设备型号",
+                }]
+              })(
+                <Input placeholder="请输入设备型号" />
+              )}  
+            </Form.Item>
+            <Form.Item
+              {...createFormItemLayout}
+              label="设备类型"
+            >
+              {getFieldDecorator('type',{
+                initialValue: id,
+                rules:[{
+                  required:true,
+                  message:"请输入设备类型",
+                }]
+              })(
+                <Input placeholder="请输入设备类型" />
               )}  
             </Form.Item>
             <Form.Item
@@ -178,7 +250,7 @@ class OrderNew extends Component{
                     const {
                       history,
                     } = this.props
-                    history.push('/cbd/panorama/scene')
+                    history.push('/cbd/panorama/device')
                   }}
                 >取消
                 </Button>
@@ -190,4 +262,4 @@ class OrderNew extends Component{
       )
     }
 }
-export default Form.create()(OrderNew)
+export default Form.create()(DeviceNew)
