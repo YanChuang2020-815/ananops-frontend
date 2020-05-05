@@ -26,7 +26,7 @@ class UserInfo extends React.Component {
     // 全局状态
     connected: false,  // 是否已经建立连接
     // controlled components相关状态
-    url: 'wss://www.ananops.com/wss/ws',
+    url: 'ws://10.112.196.254:7079/ws',
     stompSubscribeDestination: '/user/queue/chat',
     // 在console中显示的信息
     message: [],
