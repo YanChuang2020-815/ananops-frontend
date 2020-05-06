@@ -1,9 +1,10 @@
 import React,{Component} from 'react';
 import {Select,Modal} from 'antd';
 import Viewer from 'photo-sphere-viewer';
-import 'photo-sphere-viewer/dist/photo-sphere-viewer.css'
-import './index.styl'
+import 'photo-sphere-viewer/dist/photo-sphere-viewer.css';
+import './index.styl';
 import axios from 'axios';
+import arrow from './icons/arrow.gif';
 
 
 export default class Panorama extends Component{
@@ -16,7 +17,8 @@ export default class Panorama extends Component{
             markers:[],
             clickMode:0,//marker的点击模式：0无效，1添加，2删除
             sceneInfo:null,
-            visible:false,
+            visible:false,//添加设备的模态框
+            visible2:false,//添加场景的模态框
             deviceList:[],
             curDevice:null,
             curClickInfo:null,
@@ -24,6 +26,13 @@ export default class Panorama extends Component{
 
             ],
             deviceDict:[],
+            sceneList:[
+
+            ],
+            sceneDict:[],
+            selectedScene:null,
+            arrowList:[],
+            arrowDict:[],
         }
 
     }
@@ -34,6 +43,7 @@ export default class Panorama extends Component{
             sceneInfo:sceneItem,
         })
         this.getAllDevice();
+        this.getAllScene(sceneItem);
         let viewer = document.getElementById('viewer');
         let panorama = this;
         let PSV = new Viewer({
@@ -102,10 +112,11 @@ export default class Panorama extends Component{
         //加载当前场景下的设备
         PSV.on('panorama-load-progress',function(){
             panorama.getBindedDevice(sceneItem,PSV);
+            panorama.getBindedArrow(sceneItem,PSV)
         })
         //监听点击场景事件
         PSV.on('click',function(e){
-            panorama.addDevice(e);
+            panorama.addMarker(e);
         })
         //监听标记事件
         PSV.on('select-marker',function(e){
@@ -114,15 +125,130 @@ export default class Panorama extends Component{
 
     }
 
+    //获取全部的箭头
+    getBindedArrow=(sceneItem,PSV)=>{
+        axios({
+            method: 'GET',
+            url: '/rdc/rdcScene/getArrowBySceneId/'+sceneItem.id,
+            headers: {
+              'deviceId': this.deviceId,
+              'Authorization':'Bearer '+this.state.token,
+            },
+          })
+          .then((res) => {
+            if(res && res.status === 200){
+                this.setState({
+                    arrowList:res.data.result,
+                });
+                let arrowDict=[];
+                res.data.result.map((value,index)=>{
+                    arrowDict[value.id]=value;
+                })
+                this.setState({
+                    arrowDict:arrowDict,
+                })
+                for(let i=0;i<res.data.result.length;i++){
+                    PSV.addMarker({
+                        id: res.data.result[i].id,
+                        longitude: res.data.result[i].longitude,
+                        latitude: res.data.result[i].latitude,
+                        image: arrow,
+                        width: 40,
+                        height: 40,
+                        anchor:'bottom center',
+                        type:'arrow',
+                        tooltip:{
+                            content:"前往" + res.data.result[i].sceneName,
+                            fontsize:'xx-large',
+                        },
+                    });
+                }
+            }
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+    }
+
+    //获取全部的场景
+    getAllScene=(sceneItem)=>{
+        axios({
+            method: 'GET',
+            url: '/rdc/rdcScene/getAllScene',
+            headers: {
+              'deviceId': this.deviceId,
+              'Authorization':'Bearer '+this.state.token,
+            },
+          })
+          .then((res) => {
+            if(res && res.status === 200){
+                this.setState({
+                    sceneList:res.data.result,
+                });
+                let sceneDict=[];
+                res.data.result.map((value,index)=>{
+                    if(value.id != sceneItem.id){
+                        sceneDict[value.id]=value;
+                    }
+                })
+                this.setState({
+                    sceneDict:sceneDict,
+                })
+            }
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+    }
+
+    //获取场景选项
+    getSceneOption=()=>{
+        let sceneOption;
+        let {sceneList,sceneInfo} = this.state;
+        console.log(sceneList)
+        sceneOption=sceneList&&sceneList.map((item, index) => (
+            item.id!=sceneInfo.id&&
+            <Select.Option key={item.id} value={item.id}> 
+                <div>
+                    {item.sceneName}
+                </div>
+            </Select.Option>
+        ));
+        return sceneOption;
+    }
+
     handleMarkerClick=(e)=>{
-        let{PSV,clickMode} = this.state;
+        console.log(e)
+        let{PSV,clickMode,deviceDict,arrowDict,sceneDict} = this.state;
         if(clickMode==2){
             //如果是设备删除
-            this.deleteDevice(e,PSV);
+            if(deviceDict[e.id]!=undefined){
+                this.deleteDevice(e,PSV);
+            }else if(arrowDict[e.id]!=undefined){
+                this.deleteArrow(e,PSV);
+            }
+            
             
         }else{
             //如果只是查看
-            alert("经度为：" + e.longitude + "\n" + "纬度为：" + e.latitude);
+            if(deviceDict[e.id]!=undefined){
+                alert("经度为：" + e.longitude + "\n" + "纬度为：" + e.latitude + "\n" + "类型为：" + e.type);
+            }else if(arrowDict[e.id]!=undefined){
+                let arrowItem = arrowDict[e.id];
+                let sceneItem = {
+                    id:arrowItem.sceneId,
+                    sceneName:arrowItem.sceneName,
+                    url:arrowItem.url,
+                }
+                console.log(sceneItem);
+                this.props.history.push({
+                    pathname:'/cbd/panorama/panorama',
+                    state:{
+                        sceneItem:sceneItem,
+                    },
+                })
+            }
+            
         }
     }
 
@@ -157,12 +283,41 @@ export default class Panorama extends Component{
         });
     }
 
-    addDevice=(e)=>{
+    //删除箭头
+    deleteArrow=(marker,PSV)=>{
+        axios({
+            method: 'DELETE',
+            url: '/rdc/rdcScene/deleteRdcArrow/'+marker.id,
+            headers: {
+                'deviceId': this.deviceId,
+                'Authorization':'Bearer '+this.state.token,
+            },
+        })
+        .then((res) => {
+            if(res && res.status === 200){
+                PSV.removeMarker(marker);
+                this.setState({
+                    clickMode:0,
+                })
+                alert("删除成功！")
+            }
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    }
+
+    addMarker=(e)=>{
         let{PSV,clickMode} = this.state;
         if(clickMode==1){
             this.setState({
                 curClickInfo:e,
                 visible:true,
+            })
+        }else if(clickMode==3){
+            this.setState({
+                curClickInfo:e,
+                visible2:true,
             })
         }
     }
@@ -193,6 +348,7 @@ export default class Panorama extends Component{
                         width: 40,
                         height: 40,
                         anchor:'bottom center',
+                        type:'device',
                         tooltip:{
                             content:res.data.result[i].name,
                             fontsize:'xx-large',
@@ -258,6 +414,7 @@ export default class Panorama extends Component{
         console.log(e);
         this.setState({
             visible: false,
+            visible2: false,
             clickMode: 0,
         });
     };
@@ -269,8 +426,17 @@ export default class Panorama extends Component{
         })
     }
 
+    handleSceneSelect=(sceneId)=>{
+        let{sceneDict} = this.state;
+        console.log(sceneDict)
+        console.log(sceneId)
+        this.setState({
+            selectedScene:sceneDict[sceneId],
+        })
+    }
+
     handleSceneBindDevice=()=>{
-        let {PSV,curDevice,sceneInfo,curClickInfo} = this.state;
+        let {curDevice,sceneInfo,curClickInfo} = this.state;
         console.log(curDevice);
         console.log(sceneInfo)
         let value={
@@ -308,12 +474,48 @@ export default class Panorama extends Component{
         .catch(function (error) {
             console.log(error);
         });
-        this.setState({
-            visible:false,
-            clickMode:0,
-        })
     }
     
+    handleSceneBindArrow=()=>{
+        let {selectedScene,sceneInfo,curClickInfo} = this.state;
+        console.log(selectedScene);
+        console.log(sceneInfo)
+        let value={
+            curSceneId:sceneInfo.id,
+            nextSceneId:selectedScene.id,
+            longitude:curClickInfo.longitude,
+            latitude:curClickInfo.latitude,
+        };
+        console.log(value)
+        console.log(curClickInfo)
+        axios({
+            method: 'POST',
+            url: '/rdc/rdcScene/createRdcArrow',
+            headers: {
+                'deviceId': this.deviceId,
+                'Authorization':'Bearer '+this.state.token,
+            },
+            data:value
+        })
+        .then((res) => {
+            if(res && res.status === 200){
+                console.log(res.data.result)
+                alert("箭头添加成功")
+                this.setState({
+                    clickMode:0,
+                })
+                this.props.history.push({
+                    pathname:'/cbd/panorama/panorama',
+                    state:{
+                        sceneItem:this.state.sceneInfo
+                    },
+                })
+            }
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    }
 
     render(){
         
@@ -333,6 +535,21 @@ export default class Panorama extends Component{
                         allowClear
                     >
                         {this.getDeviceOption()}
+                    </Select>
+                </Modal>
+                <Modal
+                    title="场景选择"
+                    visible={this.state.visible2}
+                    onOk={()=>{this.handleSceneBindArrow()}}
+                    onCancel={this.handleCancel}
+                >
+                    <Select
+                        placeholder="请选择场景"
+                        className="device-select"
+                        onChange={(value) => { this.handleSceneSelect(value) }}
+                        allowClear
+                    >
+                        {this.getSceneOption()}
                     </Select>
                 </Modal>
             </div>
