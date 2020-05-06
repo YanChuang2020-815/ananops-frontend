@@ -53,6 +53,7 @@ export default class Panorama extends Component{
                 width: '85vw',
                 height: '84vh'
             },
+            default_fov:179,
             caption:sceneItem.sceneName,
             navbar: [
                 'autorotate',
