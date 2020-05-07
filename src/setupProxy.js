@@ -6,11 +6,15 @@
 // const target='http://www.ananops.com:29995';
 const target = 'http://10.112.196.254:29995';
 
+const gantch = 'https://smart.gantch.cn/api/v1/'
+
 const proxy = require('http-proxy-middleware');
 
 module.exports = function(app) {
   app.use(
-    proxy(['/uac','/pmc','/mdc','/mdmc','/bill','/imc','/rdc','/activiti','/amc','/spc','/websocket'],{target: target, changeOrigin: true})
+    proxy(['/uac','/pmc','/mdc','/mdmc','/bill','/imc','/rdc','/activiti','/amc','/spc','/websocket'],{target: target, changeOrigin: true}),
+    
+    proxy(['/deviceaccess'],{target: gantch,changeOrigin:true})
     // proxy(['/default'],{target})
   );
 };
