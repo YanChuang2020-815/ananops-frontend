@@ -233,7 +233,8 @@ export default class Panorama extends Component{
         }else{
             //如果只是查看
             if(deviceDict[e.id]!=undefined){
-                alert("经度为：" + e.longitude + "\n" + "纬度为：" + e.latitude + "\n" + "类型为：" + e.type);
+                // alert("经度为：" + e.longitude + "\n" + "纬度为：" + e.latitude + "\n" + "类型为：" + e.type);
+                this.getDeviceData(deviceDict[e.id]);
             }else if(arrowDict[e.id]!=undefined){
                 let arrowItem = arrowDict[e.id];
                 let sceneItem = {
@@ -251,6 +252,28 @@ export default class Panorama extends Component{
             }
             
         }
+    }
+
+    //查看设备最新数据
+    getDeviceData=(device)=>{
+        console.log(device)
+        axios({
+            method: 'GET',
+            url: '/deviceaccess/data/alllatestdata/' + device.deviceId,
+        })
+        .then((res) => {
+            if(res && res.status === 200){
+                let dataList = res.data;
+                let content = "设备数据：\n";
+                for(let i=0;i<dataList.length;i++){
+                    content+="key:" + dataList[i].key + "，value:" + dataList[i].value + "\n";
+                }
+                alert(content);
+            }
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
     }
 
     //删除设备
