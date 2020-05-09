@@ -143,11 +143,17 @@ class DeviceNew extends Component{
           })
       .then((res) => {
         if(res && res.status === 200){  
-          console.log(res.data.result)
+          console.log(res)
           this.setState({
             visible:false,
           })
-          alert("场景创建成功")
+          if(res.data.code==500){
+            alert("设备已经添加过了")
+          }
+          else{
+            alert("设备添加成功")
+          }
+          
         }
       })
       .catch(function (error) {
