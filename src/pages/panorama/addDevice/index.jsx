@@ -1,71 +1,131 @@
 import React, { Component, } from 'react';
-import { Form,Input,Select,Button,message,DatePicker,Tooltip,Icon,Upload } from 'antd';
+import { Form,Input,Select,Button,message,DatePicker,Tooltip,Icon,Upload,List,Skeleton, Modal } from 'antd';
 import axios from 'axios'
 import 'moment/locale/zh-cn';
 import  './index.styl'
+import BindedDevice from './bindDevice/index'
+const count=3;
 class DeviceNew extends Component{
     constructor(props){
         super(props)
         this.state={
             token:window.localStorage.getItem('token'),
             fileType:'',
+            initLoading:true,
+            loading:false,
+            data:[],
+            list:[],
+            visible:false,
+            curSelectedDevice:null,
         }
     }
     componentDidMount(){
-
+      axios({
+        method: 'GET',
+        url: '/deviceaccess/customerdevices/2/105?limit=1000',
+      })
+      .then((res) => {
+        console.log(res)
+        if(res && res.status === 200){
+          this.setState({
+            initLoading:false,
+            data:res.data.data,
+            list:res.data.data
+          });
+          console.log(res.data.data)
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
     }
-    beforeUpload = (file) => {
-      var fileName = file.name;
-      var type = fileName.substring(fileName.lastIndexOf(".")+1, fileName.length);
-      if (type != null) {
+
+    onLoadMore=()=>{
+      this.setState({
+        loading:true,
+        list:this.state.data.concat([...new Array(count)].map(()=>({
+          loading:true,
+          name:{}
+        }))),
+      });
+      axios({
+        method: 'GET',
+        url: '/deviceaccess/customerdevices/2/105?limit=1000',
+      })
+      .then((res) => {
+        console.log(res)
+        if(res && res.status === 200){
+          const data = this.state.data.concat(res.data.data);
+          this.setState({
+            data,
+            list:data,
+            loading:false,
+          });
+          console.log(res.data.data);
+          window.dispatchEvent(new Event('resize'));
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+    }
+
+    //处理模态框的取消
+    handleCancel = e => {
+        console.log(e);
         this.setState({
-          fileType: type,
+            visible: false,
         });
-      }
-      const isLt5M = file.size / 1024 / 1024 < 5;
-      if (!isLt5M) {
-          message.error('图片大于5MB!');
-      }
-      return isLt5M;
+    };
+
+    handleDeviceSelect=(device)=>{
+      console.log(device)
+      this.setState({
+        curSelectedDevice:device,
+        visible:true,
+      })
     }
 
-    //提交
-    handleSubmit = (e) => {
-        e.preventDefault()
-        const {
-            form,
-            history,
-            match : { params : {id } },
-        } = this.props
-        const { getFieldValue } = form;
-        const values = form.getFieldsValue()
-        console.log(values)
-        if (values.attachmentIds != undefined) {
-            var fileList = values.attachmentIds.fileList;
-            console.log(fileList)
-            values.attachmentIds = this.getAttachments(fileList);
-        }
-        if(!getFieldValue('name')){
-            message.error('请输入设备名称')
-            return;
-        }
-        if(!getFieldValue('deviceId')){
-            message.error('请输入设备ID')
-            return;
-        }
-        if(!getFieldValue('manufacture')){
-            message.error('请输入设备生产商')
-            return;
-        }
-        if(!getFieldValue('model')){
-            message.error('请输入设备型号')
-            return;
-        }
-        if(!getFieldValue('type')){
-            message.error('请输入设备类型')
-            return;
-        }
-        if(!getFieldValue('attachmentIds')){
+    //获取文件
+    getAttachments(fileList) {
+      console.log(fileList)
+      var res = [];
+      var size = fileList.length;
+      for (var i=0; i<size; i++) {
+        var attachmentId = fileList[i].response[0].attachmentId;
+        res.push(attachmentId);
+      }
+      return res;
+    }
+
+    handleSubmit = () => {
+      const values = this.form.getFieldsValue();
+      if (values.attachmentIds != undefined) {
+          var fileList = values.attachmentIds.fileList;
+          console.log(fileList)
+          values.attachmentIds = this.getAttachments(fileList);
+      }
+      if(values.name == undefined){
+          message.error('请输入设备名称')
+          return;
+      }
+      if(values.deviceId == undefined){
+          message.error('请输入设备ID')
+          return;
+      }
+      if(values.manufacture== undefined){
+          message.error('请输入设备生产商')
+          return;
+      }
+      if(values.model== undefined){
+          message.error('请输入设备型号')
+          return;
+      }
+      if(values.type== undefined){
+          message.error('请输入设备类型')
+          return;
+      }
+      if(values.attachmentIds== undefined){
           message.error('请上传场景图片')
           return;
       }
@@ -84,34 +144,16 @@ class DeviceNew extends Component{
       .then((res) => {
         if(res && res.status === 200){  
           console.log(res.data.result)
+          this.setState({
+            visible:false,
+          })
           alert("场景创建成功")
-          history.push('/cbd/panorama/device')
         }
       })
       .catch(function (error) {
         console.log(error);
       });
     }
-    //获取文件
-    getAttachments(fileList) {
-        console.log(fileList)
-        var res = [];
-        var size = fileList.length;
-        for (var i=0; i<size; i++) {
-          var attachmentId = fileList[i].response[0].attachmentId;
-          res.push(attachmentId);
-        }
-        return res;
-      }
-    fileUpload(addScene) {
-
-      return {
-        fileType: addScene.state.fileType,
-        bucketName: 'ananops',
-        filePath: 'rdcScene'
-      };
-    };
-   
 
     render(){
 
@@ -123,142 +165,50 @@ class DeviceNew extends Component{
         form: { getFieldDecorator }, 
         match : { params : { id } }
       } = this.props
-      var deviceId=new Date().getTime()
-      const uploadProps = {
-        name: 'file',
-        action: '/rdc/rdcFile/uploadRdcPic',
-        headers: {
-          authorization: 'Bearer ' + this.state.token,
-          'deviceId': deviceId,
-        },
-        beforeUpload: this.beforeUpload,
-        data: this.fileUpload(this),
-        onChange(info) {
-          if (info.file.status !== 'uploading') {
-            console.log(info.file, info.fileList);
-          }
-          if (info.file.status === 'done') {
-            console.log(info.file)
-            console.log(`${info.file.name} 上传成功！`)
-          } else if (info.file.status === 'error') {
-            message.error(`${info.file.name} 上传失败！`);
-          }
-          console.log(info)
-        },  
-      };
+      const { initLoading, loading, list ,curSelectedDevice} = this.state;
+      const loadMore =
+        !initLoading && !loading ? (
+          <div
+            style={{
+              textAlign: 'center',
+              marginTop: 12,
+              height: 32,
+              lineHeight: '32px',
+            }}
+          >
+            <Button onClick={this.onLoadMore}>loading more</Button>
+          </div>
+        ) : null;
       return(
         <div className="inpection-plan-create-page">
-          <Form
-            onSubmit={this.handleSubmit}
-          >
-            <Form.Item
-              {...createFormItemLayout}
-              label="设备名称"
+        <List
+          className="demo-loadmore-list"
+          loading={initLoading}
+          itemLayout="horizontal"
+          loadMore={loadMore}
+          dataSource={list}
+          renderItem={item => (
+            <List.Item
             >
-              {getFieldDecorator('name',{
-                initialValue: id,
-                rules:[{
-                  required:true,
-                  message:"请输入设备名称",
-                }]
-              })(
-                <Input placeholder="请输入设备名称" />
-              )}  
-            </Form.Item>
-            <Form.Item
-              {...createFormItemLayout}
-              label="设备ID"
-            >
-              {getFieldDecorator('deviceId',{
-                initialValue: id,
-                rules:[{
-                  required:true,
-                  message:"请输入设备Id",
-                }]
-              })(
-                <Input placeholder="请输入设备Id" />
-              )}  
-            </Form.Item>
-            <Form.Item
-              {...createFormItemLayout}
-              label="设备生产商"
-            >
-              {getFieldDecorator('manufacture',{
-                initialValue: id,
-                rules:[{
-                  required:true,
-                  message:"请输入设备生产商",
-                }]
-              })(
-                <Input placeholder="请输入设备生产商" />
-              )}  
-            </Form.Item>
-            <Form.Item
-              {...createFormItemLayout}
-              label="设备型号"
-            >
-              {getFieldDecorator('model',{
-                initialValue: id,
-                rules:[{
-                  required:true,
-                  message:"请输入设备型号",
-                }]
-              })(
-                <Input placeholder="请输入设备型号" />
-              )}  
-            </Form.Item>
-            <Form.Item
-              {...createFormItemLayout}
-              label="设备类型"
-            >
-              {getFieldDecorator('type',{
-                initialValue: id,
-                rules:[{
-                  required:true,
-                  message:"请输入设备类型",
-                }]
-              })(
-                <Input placeholder="请输入设备类型" />
-              )}  
-            </Form.Item>
-            <Form.Item
-              {...createFormItemLayout}
-              label="场景图片"
-            >
-              {getFieldDecorator('attachmentIds')(
-                // <div className="inspection-log-upload">
-                <Upload  {...uploadProps}>
-                  <Tooltip placement="right" title={'支持图片上传'}>
-                    <Button><Icon type="upload" />上传图片</Button>
-                  </Tooltip>
-                </Upload>
-                // </div>
-              )}
-            </Form.Item>
-            <section className="operator-container">
-              <div style={{textAlign:"center"}}>
-                <Button
-                  htmlType="submit"
-                  type="primary"
-                  size="default"
-                >{id ? '编辑' : '新建'}
-                </Button>
-                <Button
-                  style={{marginLeft:"28px"}}
-                  size="default"
-                  onClick={()=> {
-                    const {
-                      history,
-                    } = this.props
-                    history.push('/cbd/panorama/device')
-                  }}
-                >取消
-                </Button>
-              </div>
-            </section>
-          </Form>
-        </div>
-          
+              <Skeleton title={false} loading={item.loading} active>
+                <List.Item.Meta
+                  title={"设备名称：" + item.name}
+                  description={"设别类型：" + item.deviceType + "，设备厂商：" + item.manufacture + "，设备型号：" + item.model}
+                />
+                <Button onClick={()=>{this.handleDeviceSelect(item)}}>添加</Button>
+              </Skeleton>
+            </List.Item>
+          )}
+        />
+        <Modal
+          title="设备选择"
+          visible={this.state.visible}
+          onOk={()=>{this.handleSubmit()}}
+          onCancel={this.handleCancel}
+        >
+          <BindedDevice setAssign={(form)=>{this.form = form}} curSelectedDevice={curSelectedDevice}/>
+        </Modal>
+      </div>   
       )
     }
 }
