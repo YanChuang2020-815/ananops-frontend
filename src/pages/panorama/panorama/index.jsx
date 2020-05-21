@@ -5,8 +5,11 @@ import 'photo-sphere-viewer/dist/photo-sphere-viewer.css';
 import './index.styl';
 import axios from 'axios';
 import arrow from './icons/arrow.gif';
+import StompJS from 'stompjs/lib/stomp.js';
 
 
+const Stomp = StompJS.Stomp;
+const userId = window.localStorage.getItem("id");
 export default class Panorama extends Component{
     constructor(props){
         super(props)
@@ -33,6 +36,12 @@ export default class Panorama extends Component{
             selectedScene:null,
             arrowList:[],
             arrowDict:[],
+            // 全局状态
+            connected: false,  // 是否已经建立连接
+            // controlled components相关状态
+            url: 'wss://www.ananops.com/wss/ws',
+            stompSubscribeDestination: '/user/queue/chat',
+            curAlarmDevice:null,
         }
 
     }
@@ -99,6 +108,7 @@ export default class Panorama extends Component{
                     className:'custom-button',
                     content:'返回',
                     onClick:function(){
+                        panorama.disconnect()
                         panorama.props.history.push({
                             pathname:'/cbd/panorama/scene',
                         })
@@ -125,7 +135,115 @@ export default class Panorama extends Component{
             panorama.handleMarkerClick(e);
         })
 
+    
+        this.disconnect();
+        this.connect(userId);
     }
+
+
+    /**
+     * 关闭连接
+     */
+    disconnect = () => {
+        if (!this.state.connected) {
+        console.log(`Not Connected Yet`);
+        return;
+        }
+        try {
+        this.client.disconnect();
+        console.log('Close Connection Success');
+        this.setState({connected: false});
+        } catch (e) {
+        console.log(`disconnect fail, message = ${e.message}, view chrome console for detail`);
+        }
+    };
+
+    /**
+     * 连接服务端
+     */
+    connect = (userId) => {
+        const that = this;
+        try {
+        let client = Stomp.over(new WebSocket(this.state.url));
+
+        client.connect({"userId": userId}, () => {
+            that.setState({connected: true});
+            console.log(`Connect STOMP server success, url = ${that.state.url}, connectHeader = ${userId}`);
+
+            try {
+            client.subscribe(this.state.stompSubscribeDestination, this.getSubscribeCallback(this.state.stompSubscribeDestination));
+            
+            console.log(`subscribe destination ${this.state.stompSubscribeDestination} success`);
+            
+            } catch (e) {
+            console.log(`subscribe destination ${this.state.stompSubscribeDestination} fail, message = ${e.message}`);
+            }
+            
+        }, () => {
+            that.setState({connected: false});
+            console.log('连接断开，5秒后重新连接');
+            window.setTimeout(() => {
+            this.connect(userId);
+            }, 5000);
+        });
+        this.client = client;
+        } catch (e) {
+        console.error('Connect error %o', e);
+        console.log(`Connect error, message = ${e.message}, view chrome console for detail`);
+        that.setState({connected: false});
+        return;
+        }
+    };
+    
+    getSubscribeCallback = (destination) =>{
+        return content => {
+            let{PSV,deviceDict,curAlarmDevice} = this.state;
+            if(window.location.href.substr(22)!="cbd/panorama/panorama"){
+                this.disconnect();
+                return;
+            }
+            const contentBody = JSON.parse(content.body)
+            const msgBody = contentBody.content;
+            console.log(msgBody)
+            const position = {
+                longitude:this.changeTwoDecimal_f(msgBody.longitude),
+                latitude:this.changeTwoDecimal_f(msgBody.latitude)
+            }
+            
+            let cameraPosition = PSV.getPosition();
+            cameraPosition.longitude = this.changeTwoDecimal_f(cameraPosition.longitude);
+            cameraPosition.latitude = this.changeTwoDecimal_f(cameraPosition.latitude)
+            
+            if(position.longitude!=cameraPosition.longitude || position.latitude != cameraPosition.latitude){
+                console.log(position)
+                console.log(cameraPosition)
+                PSV.animate(position,1500)
+            }
+            
+        };
+    }
+
+    
+    //处理浮点数
+     changeTwoDecimal_f = (x)=>{
+        var f_x = parseFloat(x);
+        if (isNaN(f_x)) {
+            alert('function:changeTwoDecimal->parameter error');
+            return false;
+        }
+        var f_x = Math.round(x * 100) / 100;
+        var s_x = f_x.toString();
+        var pos_decimal = s_x.indexOf('.');
+        if (pos_decimal < 0) {
+            pos_decimal = s_x.length;
+            s_x += '.';
+        }
+        while (s_x.length <= pos_decimal + 2) {
+            s_x += '0';
+        }
+        return s_x;
+    }
+    
 
     //获取全部的箭头
     getBindedArrow=(sceneItem,PSV)=>{

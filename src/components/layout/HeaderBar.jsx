@@ -87,8 +87,8 @@ class UserInfo extends React.Component {
   getSubscribeCallback = (destination) =>{
     
     return content => {
-      console.log(`Receive subscribed message from destination ${destination}, content = ${content}`)
-      console.log(JSON.parse(content.body))
+      // console.log(`Receive subscribed message from destination ${destination}, content = ${content}`)
+      // console.log(JSON.parse(content.body))
       const contentBody = JSON.parse(content.body)
       const incomeMsg = {
         id:contentBody.messageId,
