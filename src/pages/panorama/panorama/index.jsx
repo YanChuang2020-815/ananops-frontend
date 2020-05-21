@@ -213,11 +213,17 @@ export default class Panorama extends Component{
             let cameraPosition = PSV.getPosition();
             cameraPosition.longitude = this.changeTwoDecimal_f(cameraPosition.longitude);
             cameraPosition.latitude = this.changeTwoDecimal_f(cameraPosition.latitude)
-            
-            if(position.longitude!=cameraPosition.longitude || position.latitude != cameraPosition.latitude){
-                console.log(position)
-                console.log(cameraPosition)
-                PSV.animate(position,1500)
+            let deviceId = msgBody.deviceId;
+            try{
+                if(PSV.getMarker(deviceId)!=null){
+                    if(position.longitude!=cameraPosition.longitude || position.latitude != cameraPosition.latitude){
+                        console.log(position)
+                        console.log(cameraPosition)
+                        PSV.animate(position,1500)
+                    }
+                }
+            }catch(err){
+                return
             }
             
         };
