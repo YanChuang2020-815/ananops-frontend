@@ -26,7 +26,7 @@ class UserInfo extends React.Component {
     // 全局状态
     connected: false,  // 是否已经建立连接
     // controlled components相关状态
-    url: 'ws://10.112.196.254:7079/ws',
+    url: 'wss://www.ananops.com/wss/ws',
     stompSubscribeDestination: '/user/queue/chat',
     // 在console中显示的信息
     message: [],
@@ -108,7 +108,7 @@ class UserInfo extends React.Component {
       this.setState({itemStatus:newStatus,count:this.state.count+1,message:newMessage})
       notification.open({
         message: contentBody.tag,
-        description:contentBody.content.msgBodyDto.statusMsg,
+        description:contentBody.content.msgBodyDto==null?contentBody.content.deviceName + "消息,当前值为：" + contentBody.content.value:contentBody.content.msgBodyDto.statusMsg,
         onClick: this.showDrawer,
       });
     };
@@ -413,7 +413,7 @@ class UserInfo extends React.Component {
         >
           <ChangePwd setForm={(form)=>{this.form = form}}/>
         </Modal>
-        <Drawer
+        {/* <Drawer
           title={<><Switch defaultChecked={this.state.checkIsRead} checked={this.state.checkIsRead} onChange={this.showAlreadyRead}/><span>  展示已读</span></>}
           width={420}
           closable={false}
@@ -502,7 +502,7 @@ class UserInfo extends React.Component {
               )
           }
           
-        </Drawer>
+        </Drawer> */}
       </div>
     );
   }

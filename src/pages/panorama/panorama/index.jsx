@@ -110,6 +110,7 @@ export default class Panorama extends Component{
             viewer:viewer,
             PSV:PSV,
         })
+        console.log(PSV)
         //加载当前场景下的设备
         PSV.on('panorama-load-progress',function(){
             panorama.getBindedDevice(sceneItem,PSV);

@@ -50,7 +50,7 @@ class DeviceNew extends Component{
       });
       axios({
         method: 'GET',
-        url: '/deviceaccess/customerdevices/2/105?limit=1000',
+        url: '/deviceaccess/tenant/devices/2?limit=1000',
       })
       .then((res) => {
         console.log(res)
