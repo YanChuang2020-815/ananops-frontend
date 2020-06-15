@@ -128,6 +128,16 @@ export default class Panorama extends Component{
         })
         //监听点击场景事件
         PSV.on('click',function(e){
+            let e1 = {
+                latitude: e.latitude,
+                longitude: e.longitude
+            }
+            let e2 = {
+                latitude: 0,
+                longitude: 0
+            }
+            console.log(e1)
+            panorama.gps2d(e1,e2)
             panorama.addMarker(e);
         })
         //监听标记事件
@@ -359,7 +369,8 @@ export default class Panorama extends Component{
             //如果只是查看
             if(deviceDict[e.id]!=undefined){
                 // alert("经度为：" + e.longitude + "\n" + "纬度为：" + e.latitude + "\n" + "类型为：" + e.type);
-                this.getDeviceData(deviceDict[e.id]);
+                this.computeRadio(deviceDict[e.id],e);
+                //this.getDeviceData(deviceDict[e.id]);
             }else if(arrowDict[e.id]!=undefined){
                 let arrowItem = arrowDict[e.id];
                 let sceneItem = {
@@ -659,6 +670,57 @@ export default class Panorama extends Component{
                         sceneItem:this.state.sceneInfo
                     },
                 })
+            }
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    }
+    
+    gps2d=(e1,e2)=>{
+        let d =
+        Math.cos(e1.latitude) *
+        Math.cos(e2.latitude) *
+        Math.cos(e1.longitude - e2.longitude) +
+        Math.sin(e1.latitude) *
+        Math.sin(e2.latitude)
+        d = Math.acos(d)*180/Math.PI
+        if (e1.longitude<=3) {
+            alert("顺时针旋转：" + d + "°")
+        } else {
+            alert("逆时针旋转：" + d + "°")
+        }
+        return d
+    }
+
+    computeRadio=(device,marker)=>{
+        const data = {
+            userId: userId,
+            sceneId: this.state.sceneInfo.id,
+            deviceId: device.id,
+            longitude: marker.longitude,
+            latitude: marker.latitude
+        }
+        console.log(data)
+        axios({
+            method: 'POST',
+            url: '/rdc/rdcScene/computeRadio',
+            headers: {
+                'deviceId': this.deviceId,
+                'Authorization':'Bearer '+this.state.token,
+            },
+            data:data
+        })
+        .then((res) => {
+            if(res && res.status === 200){
+                console.log(res.data.result)
+                let radio = res.data.result
+                if (radio > 0){
+                    alert("摄像机需顺时针转向：" + res.data.result + "°")
+                } else {
+                    alert("摄像机需逆时针转向：" + (-res.data.result) + "°")
+                }
+                
             }
         })
         .catch(function (error) {

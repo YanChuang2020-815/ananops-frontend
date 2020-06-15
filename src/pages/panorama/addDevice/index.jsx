@@ -27,10 +27,21 @@ class DeviceNew extends Component{
       .then((res) => {
         console.log(res)
         if(res && res.status === 200){
+          let list = []
+          list.push({
+            createdTime: new Date(),
+            customerId: 1,
+            deviceType: 'camera',
+            id: '815815815',
+            manufacture: '815',
+            model: 'default',
+            name: 'camera'
+          })
+          list.push(res.data.data)
           this.setState({
             initLoading:false,
-            data:res.data.data,
-            list:res.data.data
+            data:list,
+            list:list
           });
           console.log(res.data.data)
         }
