@@ -43,6 +43,7 @@ import CompanyManager from '../pages/group/company-manager'
 import GroupEmpl from '../pages/group/group-empl'
 import CompanyAdd from '../pages/group/company-add'
 import PanoramaRoute from '../pages/panorama'
+import EdgeDeviceRoute from '../pages/edgeDevice'
 //const Home = React.lazy(()=>import(/* webpackChunkName: 'Home'*/ "../pages/home"))
 //const HeaderBar = React.lazy(()=>import(/* webpackChunkName: 'HeaderBar'*/ "../components/layout/HeaderBar.jsx"))
 //const SiderBar = React.lazy(()=>import(/* webpackChunkName: 'SiderBar'*/ "../components/layout/SideBar.jsx"))
@@ -135,6 +136,7 @@ class Index extends React.Component {
                 <Route path="/cbd/imcTaskInfo" component={ImcTaskInfo}/>
                 <Route path="/cbd/imcItemInfo" component={ImcItemInfo}/>
                 <Route path="/cbd/panorama" component={PanoramaRoute}/>
+                <Route path="/cbd/edgeDevice" component={EdgeDeviceRoute}/>
 
                 <Route path="/mds/dict/list" component={Dictionary}/>
                 <Route path="/mds/form/list" component={UserForm}/>
