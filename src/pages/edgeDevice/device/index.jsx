@@ -86,9 +86,9 @@ export default class Device extends Component{
         render: (device) => { 
             return (
                 <span>
-                  <LinkButton onClick={() => this.editDevice(device)}>修改</LinkButton>|
+                  <LinkButton onClick={() => this.listenDevice(device)}>监听</LinkButton>|
                   <LinkButton onClick={() => this.checkDevice(device)}>详情</LinkButton>|
-                  <LinkButton onClick={() => alert("删除")}>删除</LinkButton>
+                  <LinkButton onClick={() => this.deleteDevice(device)}>删除</LinkButton>
                 </span>
             )
           }
@@ -119,6 +119,50 @@ export default class Device extends Component{
       device: device,
       editDevice: true
     })
+  }
+
+  deleteDevice = (device) => {
+    console.log(device)
+    axios({
+      method: 'POST',
+      url: '/rdc/edgeDevice/deleteEdgeDevice',
+      headers: {
+        'deviceId': this.deviceId,
+        'Authorization':'Bearer '+this.state.token,
+      },
+      data:device
+    })
+    .then((res) => {
+      if(res && res.status === 200){
+        alert("删除成功")
+      }
+    })
+    .catch(function (error) {
+      console.log(error);
+      alert("删除失败")
+    });
+  }
+
+  listenDevice = (device) => {
+    console.log(device)
+    axios({
+      method: 'POST',
+      url: '/rdc/edgeDevice/watchEdgeDevice',
+      headers: {
+        'deviceId': this.deviceId,
+        'Authorization':'Bearer '+this.state.token,
+      },
+      data:device
+    })
+    .then((res) => {
+      if(res && res.status === 200){
+        alert("正在监听")
+      }
+    })
+    .catch(function (error) {
+      console.log(error);
+      alert("监听失败")
+    });
   }
 
   onCancel = () =>{

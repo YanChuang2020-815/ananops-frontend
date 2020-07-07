@@ -45,6 +45,28 @@ export default class DeviceModel extends Component{
     });
   }
 
+  deleteDeviceModel = (deviceModel) => {
+    console.log(deviceModel)
+    axios({
+      method: 'POST',
+      url: '/rdc/edgeDevice/deleteEdgeDeviceModel',
+      headers: {
+        'deviceId': this.deviceId,
+        'Authorization':'Bearer '+this.state.token,
+      },
+      data:deviceModel
+    })
+    .then((res) => {
+      if(res && res.status === 200){
+        alert("删除成功")
+      }
+    })
+    .catch(function (error) {
+      console.log(error);
+      alert("删除失败")
+    });
+  }
+
   
   initColumns = () => {
     this.columns = [
@@ -82,9 +104,9 @@ export default class DeviceModel extends Component{
         render: (deviceModel) => { 
             return (
                 <span>
-                  <LinkButton onClick={() => this.showEditDeviceModel(deviceModel)}>修改</LinkButton>|
+                  {/* <LinkButton onClick={() => this.showEditDeviceModel(deviceModel)}>修改</LinkButton>| */}
                   <LinkButton onClick={() => this.showDeviceModel(deviceModel)}>详情</LinkButton>|
-                  <LinkButton onClick={() => alert("删除")}>删除</LinkButton>
+                  <LinkButton onClick={() => this.deleteDeviceModel(deviceModel)}>删除</LinkButton>
                 </span>
             )
           }
