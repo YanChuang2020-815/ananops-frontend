@@ -90,6 +90,7 @@ class UserInfo extends React.Component {
       // console.log(`Receive subscribed message from destination ${destination}, content = ${content}`)
       // console.log(JSON.parse(content.body))
       const contentBody = JSON.parse(content.body)
+      console.log(contentBody)
       const incomeMsg = {
         id:contentBody.messageId,
         userId:contentBody.content.userId,
@@ -108,7 +109,11 @@ class UserInfo extends React.Component {
       this.setState({itemStatus:newStatus,count:this.state.count+1,message:newMessage})
       notification.open({
         message: contentBody.tag,
-        description:contentBody.content.msgBodyDto==null?contentBody.content.deviceName + "消息,当前值为：" + contentBody.content.value:contentBody.content.msgBodyDto.statusMsg,
+        duration: 0,
+        description:
+        contentBody.content.deviceTwins==null?
+        contentBody.content.deviceName + "消息,当前值为：" + contentBody.content.value:
+        JSON.stringify(contentBody.content.deviceTwins),
         onClick: this.showDrawer,
       });
     };
