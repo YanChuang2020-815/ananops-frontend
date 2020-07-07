@@ -2,6 +2,7 @@ import React,{Component} from 'react';
 import {Table, Button, Card, Select, Input, Icon, Modal, message, Alert, Tag,Space} from 'antd';
 import LinkButton from '../../../components/link-button'
 import axios from 'axios';
+import AddUpdateForm from './detail'
 
 export default class Device extends Component{
   constructor(props){
@@ -11,11 +12,37 @@ export default class Device extends Component{
         deviceList:[
 
         ],
+        editDevice: false,
+        checkDevice: false,
+        addDevice: false,
+        device: null
       }
 
   }
   componentDidMount(){
-    
+    this.getAllDevice()
+  }
+
+  getAllDevice = () => {
+    axios({
+      method: 'GET',
+      url: '/rdc/edgeDevice/getAllEdgeDevice',
+      headers: {
+        'deviceId': this.deviceId,
+        'Authorization':'Bearer '+this.state.token,
+      }
+    })
+    .then((res) => {
+      if(res && res.status === 200){
+        console.log(res.data.result)
+        this.setState({
+          deviceList: res.data.result
+        });
+      }
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
   }
 
   initColumns = () => {
@@ -34,7 +61,7 @@ export default class Device extends Component{
       },
       {
         title:'设备模型',
-        dataIndex:'metadata.labels.model',
+        dataIndex:'spec.deviceModelRef.name',
         width:70,
       },
       {
@@ -48,14 +75,19 @@ export default class Device extends Component{
         width:70,
       },
       {
+        title:'所在节点',
+        dataIndex:'spec.nodeSelector.nodeSelectorTerms[0].matchExpressions[0].values',
+        width:70,
+      },
+      {
         title:'操作',
         width:280,
         fixed:'right',
         render: (device) => { 
             return (
                 <span>
-                  <LinkButton onClick={() => alert("修改")}>修改</LinkButton>|
-                  <LinkButton onClick={() => alert("详情")}>详情</LinkButton>|
+                  <LinkButton onClick={() => this.editDevice(device)}>修改</LinkButton>|
+                  <LinkButton onClick={() => this.checkDevice(device)}>详情</LinkButton>|
                   <LinkButton onClick={() => alert("删除")}>删除</LinkButton>
                 </span>
             )
@@ -66,6 +98,132 @@ export default class Device extends Component{
 
   componentWillMount() {
     this.initColumns()
+  }
+
+  checkDevice = (device) => {
+    this.setState({
+      device: device,
+      checkDevice: true
+    })
+  }
+
+  addDevice = (device) => {
+    this.setState({
+      device: device,
+      addDevice: true
+    })
+  }
+
+  editDevice = (device) => {
+    this.setState({
+      device: device,
+      editDevice: true
+    })
+  }
+
+  onCancel = () =>{
+    this.setState({
+      checkDevice: false,
+      editDevice: false,
+      addDevice: false
+    })
+    this.form.resetFields()
+  }
+
+  onSubmit = (e) => {
+    e.preventDefault()
+    const { getFieldValue } = this.form;
+    let device =  this.form.getFieldsValue()
+    device.twins.map((item, index) => {
+      item.propertyName = JSON.parse(item.propertyName).propertyName
+    })
+    device.deviceModel = JSON.parse(device.deviceModel).metadata.name
+    if(!getFieldValue('name')){
+      message.error('请输入设备名')
+      return;
+    }
+    if(!getFieldValue('deviceModel')){
+      message.error('请输入设备模型')
+      return;
+    }
+    if(!getFieldValue('apiVersion')){
+      message.error('请输入API版本')
+      return;
+    }
+    if(!getFieldValue('kind')){
+      message.error('请输入资源类型')
+      return;
+    }
+    if(!getFieldValue('node')){
+      message.error('请输入所在节点')
+      return;
+    }
+    if(!getFieldValue('twins') || getFieldValue('twins').length==0){
+      message.error('请添加设备类型属性')
+      return;
+    }
+    this.form.resetFields()
+    console.log(device)
+    let data = {
+        apiVersion: device.apiVersion,
+        kind: 'Device',
+        metadata: {
+          name: device.name,
+          labels: {
+            description: device.name,
+            model: device.deviceModel
+          },
+          namespace:'default'
+        },
+        spec: {
+          deviceModelRef: {
+            name: device.deviceModel
+          },
+          nodeSelector: {
+            nodeSelectorTerms: [
+              {
+                matchExpressions: [
+                  {
+                    key:'',
+                    operator: 'In',
+                    values: [
+                      device.node
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        status: {
+          twins: device.twins
+        }
+    }
+    console.log(data)
+    axios({
+      method: 'POST',
+      url: '/rdc/edgeDevice/createEdgeDevice',
+      headers: {
+        'deviceId': this.deviceId,
+        'Authorization':'Bearer '+this.state.token,
+      },
+      data:data
+    })
+    .then((res) => {
+      if(res && res.status === 200){
+        alert("设备创建成功！")
+        this.setState({
+          addDevice: false
+        })
+      }
+    })
+    .catch(function (error) {
+      console.log(error);
+      alert("设备创建失败")
+        this.setState({
+          addDevice: false
+        })
+    });
   }
 
   render(){
@@ -118,10 +276,11 @@ export default class Device extends Component{
 
     const extra = (
       <span>
-        <Button type="primary" style={{marginRight:'15px'}} onClick={() => alert("添加设备")}><Icon type="plus"/>添加设备</Button>
+        <Button type="primary" style={{marginRight:'15px'}} onClick={() => this.addDevice({})}><Icon type="plus"/>添加设备</Button>
       </span>
-
     )
+
+    const {editDevice, addDevice, checkDevice, device, deviceList} = this.state
     return (
       <Card extra={extra}>
         <Table
@@ -129,7 +288,7 @@ export default class Device extends Component{
           //loading={loading}
           rowKey="id"
           size='small'
-          dataSource={mockData}
+          dataSource={deviceList}
           columns={this.columns}
           pagination={{
             current:this.pageNum,
@@ -138,6 +297,44 @@ export default class Device extends Component{
             total:0,
           }}
         />
+        <Modal
+          title="设备详情"
+          visible={checkDevice}
+          onOk={this.onCancel}
+          onCancel={this.onCancel}
+        >
+          <AddUpdateForm
+            setForm={(form)=>{this.form = form}}
+            device={device}
+            mode="check"
+          />
+        </Modal>
+
+        <Modal
+          title="编辑设备"
+          visible={editDevice}
+          onOk={this.onCancel}
+          onCancel={this.onCancel}
+        >
+          <AddUpdateForm
+            setForm={(form)=>{this.form = form}}
+            device={device}
+            mode="edit"
+          />
+        </Modal>
+
+        <Modal
+          title="添加设备"
+          visible={addDevice}
+          onOk={this.onSubmit}
+          onCancel={this.onCancel}
+        >
+          <AddUpdateForm
+            setForm={(form)=>{this.form = form}}
+            device={device}
+            mode="add"
+          />
+        </Modal>
       </Card>
     )
   }
