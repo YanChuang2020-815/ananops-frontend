@@ -16,7 +16,7 @@ class AddUpdateForm extends Component{
   constructor(props){
     super(props)
     this.state={
-      properties: props.deviceModel.properties,
+      properties: props.deviceModel.spec != null ? (props.deviceModel.spec.properties || []) : [],
       isChangeable: props.mode != 'check' ? 'block' : 'none'
     }
 
@@ -50,7 +50,7 @@ class AddUpdateForm extends Component{
 
     // 删除
     const deleteRow = (index) => {
-        let properties = this.props.deviceModel.properties;
+        let properties = this.state.properties;
         if (properties.length === 1) {
         return;
         }
@@ -164,7 +164,7 @@ class AddUpdateForm extends Component{
         <Item label="名称">
           {
             getFieldDecorator('name',{
-              initialValue:deviceModel.name,
+              initialValue:deviceModel.metadata != null ? (deviceModel.metadata.name || '') : '',
               rules:[{
                 required:true,
                 message:'设备类型名必须输入'
@@ -179,7 +179,7 @@ class AddUpdateForm extends Component{
         <Item label="命名空间">
           {
             getFieldDecorator('namespace',{
-              initialValue:deviceModel.namespace || 'default',
+              initialValue:deviceModel.metadata != null ? (deviceModel.metadata.namespace || 'default') : 'default',
               rules:[{
                 required:true,
                 message:'命名空间必须输入'
@@ -209,7 +209,7 @@ class AddUpdateForm extends Component{
         <Item label="资源类型">
           {
             getFieldDecorator('kind',{
-              initialValue:deviceModel.kind || 'deviceModel',
+              initialValue:deviceModel.kind || 'DeviceModel',
               rules:[{
                 required:true,
                 message:'资源类型必须输入'
