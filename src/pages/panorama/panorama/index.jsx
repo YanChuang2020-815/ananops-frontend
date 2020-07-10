@@ -137,7 +137,7 @@ export default class Panorama extends Component{
                 longitude: 0
             }
             console.log(e1)
-            panorama.gps2d(e1,e2)
+            // panorama.gps2d(e1,e2)
             panorama.addMarker(e);
         })
         //监听标记事件
@@ -369,8 +369,8 @@ export default class Panorama extends Component{
             //如果只是查看
             if(deviceDict[e.id]!=undefined){
                 // alert("经度为：" + e.longitude + "\n" + "纬度为：" + e.latitude + "\n" + "类型为：" + e.type);
-                this.computeRadio(deviceDict[e.id],e);
-                //this.getDeviceData(deviceDict[e.id]);
+                // this.computeRadio(deviceDict[e.id],e);
+                this.getDeviceData(deviceDict[e.id]);
             }else if(arrowDict[e.id]!=undefined){
                 let arrowItem = arrowDict[e.id];
                 let sceneItem = {

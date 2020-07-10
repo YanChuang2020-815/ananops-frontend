@@ -86,7 +86,7 @@ export default class Device extends Component{
         render: (device) => { 
             return (
                 <span>
-                  <LinkButton onClick={() => this.listenDevice(device)}>监听</LinkButton>|
+                  {/* <LinkButton onClick={() => this.listenDevice(device)}>监听</LinkButton>| */}
                   <LinkButton onClick={() => this.checkDevice(device)}>详情</LinkButton>|
                   <LinkButton onClick={() => this.deleteDevice(device)}>删除</LinkButton>
                 </span>
