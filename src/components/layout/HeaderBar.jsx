@@ -108,12 +108,13 @@ class UserInfo extends React.Component {
       newMessage.push(incomeMsg)
       this.setState({itemStatus:newStatus,count:this.state.count+1,message:newMessage})
       notification.open({
-        message: contentBody.tag,
+        message: contentBody.topic,
         duration: 0,
         description:
         contentBody.content.deviceTwins==null?
         contentBody.content.deviceName + "消息,当前值为：" + contentBody.content.value:
-        JSON.stringify(contentBody.content.deviceTwins),
+        "设备名称：" + contentBody.content.deviceName + "\n" + "行为：" + contentBody.content.action
+        + "\n" + "当前数据为：" + JSON.stringify(contentBody.content.deviceTwins),
         onClick: this.showDrawer,
       });
     };
