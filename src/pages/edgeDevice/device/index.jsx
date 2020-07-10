@@ -135,6 +135,7 @@ export default class Device extends Component{
     .then((res) => {
       if(res && res.status === 200){
         alert("删除成功")
+        this.getAllDevice()
       }
     })
     .catch(function (error) {
@@ -259,6 +260,7 @@ export default class Device extends Component{
         this.setState({
           addDevice: false
         })
+        this.getAllDevice()
       }
     })
     .catch(function (error) {
