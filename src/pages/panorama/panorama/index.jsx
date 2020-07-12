@@ -214,7 +214,8 @@ export default class Panorama extends Component{
             }
             const contentBody = JSON.parse(content.body)
             const msgBody = contentBody.content;
-            console.log(msgBody)
+            console.log(contentBody)
+            if (contentBody.topic != 'alarm') return
             const position = {
                 longitude:this.changeTwoDecimal_f(msgBody.longitude),
                 latitude:this.changeTwoDecimal_f(msgBody.latitude)

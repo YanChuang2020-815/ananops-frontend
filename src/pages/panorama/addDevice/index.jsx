@@ -22,7 +22,7 @@ class DeviceNew extends Component{
     componentDidMount(){
       axios({
         method: 'GET',
-        url: '/deviceaccess/customerdevices/2/105?limit=1000',
+        url: '/deviceaccess/parentdevices/094f9ec1-05d4-11ea-8ed8-9b8a84d51816?limit=1000',
       })
       .then((res) => {
         console.log(res)
@@ -37,13 +37,13 @@ class DeviceNew extends Component{
             model: 'default',
             name: 'camera'
           })
-          list.push(res.data.data)
+          //list.push(res.data)
           this.setState({
             initLoading:false,
             data:list,
             list:list
           });
-          console.log(res.data.data)
+          console.log(res.data)
         }
       })
       .catch(function (error) {
@@ -61,18 +61,18 @@ class DeviceNew extends Component{
       });
       axios({
         method: 'GET',
-        url: '/deviceaccess/tenant/devices/2?limit=1000',
+        url: '/deviceaccess/parentdevices/094f9ec1-05d4-11ea-8ed8-9b8a84d51816?limit=1000',
       })
       .then((res) => {
         console.log(res)
         if(res && res.status === 200){
-          const data = this.state.data.concat(res.data.data);
+          const data = this.state.data.concat(res.data);
           this.setState({
             data,
             list:data,
             loading:false,
           });
-          console.log(res.data.data);
+          console.log(res.data);
           window.dispatchEvent(new Event('resize'));
         }
       })
