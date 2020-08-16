@@ -80,6 +80,7 @@ class BindedDevice extends Component{
         },  
       };
       const curSelectedDevice = this.props.curSelectedDevice;
+      console.log(curSelectedDevice)
       return(
           <Form
           >
@@ -102,7 +103,7 @@ class BindedDevice extends Component{
               label="设备ID"
             >
               {getFieldDecorator('deviceId',{
-                initialValue: curSelectedDevice.id,
+                initialValue: curSelectedDevice.metadata.uid,
                 rules:[{
                   required:true,
                   message:"请输入设备Id",

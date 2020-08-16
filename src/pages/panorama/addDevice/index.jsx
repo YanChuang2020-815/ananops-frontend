@@ -81,6 +81,48 @@ class DeviceNew extends Component{
       });
     }
 
+    onLoadMoreEdgeDevice=()=>{
+      this.setState({
+        loading:true,
+        list:this.state.data.concat([...new Array(count)].map(()=>({
+          loading:true,
+          name:{}
+        }))),
+      });
+      axios({
+        method: 'GET',
+        url: '/rdc/edgeDevice/getAllEdgeDevice',
+        headers: {
+            'Content-Type': 'application/json',
+            'deviceId': this.deviceId,
+            'Authorization':'Bearer '+this.state.token,
+        },
+      })
+      .then((res) => {
+        console.log(res)
+        if(res && res.status === 200){
+          res.data.result.forEach(element => {
+            element.name = element.metadata.name
+            element.deviceType = element.spec.deviceModelRef.name
+            element.manufacture = "gantch"
+            element.model = "edge"
+          });
+          //console.log(res.data.result)
+          const data = this.state.data.concat(res.data.result);
+          this.setState({
+            data,
+            list:data,
+            loading:false,
+          });
+          console.log(res.data);
+          window.dispatchEvent(new Event('resize'));
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+    }
+
     //处理模态框的取消
     handleCancel = e => {
         console.log(e);
@@ -140,11 +182,12 @@ class DeviceNew extends Component{
           message.error('请上传场景图片')
           return;
       }
+      values.uid = values.deviceId;
       console.log("参数：")
       console.log(values)
       axios({
           method: 'POST',
-          url: '/rdc/rdcDevice/save',
+          url: '/rdc/rdcDevice/saveEdgeDevice',
           headers: {
               'Content-Type': 'application/json',
               'deviceId': this.deviceId,
@@ -193,7 +236,7 @@ class DeviceNew extends Component{
               lineHeight: '32px',
             }}
           >
-            <Button onClick={this.onLoadMore}>loading more</Button>
+            <Button onClick={this.onLoadMoreEdgeDevice}>loading more</Button>
           </div>
         ) : null;
       return(

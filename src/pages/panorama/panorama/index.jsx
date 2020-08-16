@@ -371,7 +371,7 @@ export default class Panorama extends Component{
             if(deviceDict[e.id]!=undefined){
                 // alert("经度为：" + e.longitude + "\n" + "纬度为：" + e.latitude + "\n" + "类型为：" + e.type);
                 // this.computeRadio(deviceDict[e.id],e);
-                this.getDeviceData(deviceDict[e.id]);
+                this.getEdgeDeviceData(deviceDict[e.id]);
             }else if(arrowDict[e.id]!=undefined){
                 let arrowItem = arrowDict[e.id];
                 let sceneItem = {
@@ -389,6 +389,27 @@ export default class Panorama extends Component{
             }
             
         }
+    }
+
+    //查看边缘设备的最新数据
+    getEdgeDeviceData=(device)=>{
+        console.log(device)
+        axios({
+            method: 'POST',
+            url: '/rdc/rdcDevice/getDeviceData/' + device.name,
+            headers: {
+                'deviceId': this.deviceId,
+                'Authorization':'Bearer '+this.state.token,
+            }
+        })
+        .then((res) => {
+            if(res && res.status === 200){
+                console.log("done!")
+            }
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
     }
 
     //查看设备最新数据
