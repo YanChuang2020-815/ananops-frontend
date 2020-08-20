@@ -91,6 +91,17 @@ class UserInfo extends React.Component {
       // console.log(JSON.parse(content.body))
       const contentBody = JSON.parse(content.body)
       console.log(contentBody)
+      if (contentBody.content.action == 'CHECK') {
+        let curData = []
+        for (let item in contentBody.content.deviceTwins) {
+          curData.push({
+            属性名: contentBody.content.deviceTwins[item].propertyName,
+            属性值: contentBody.content.deviceTwins[item].reported.value
+          })
+        }
+        alert("设备名：" + contentBody.content.deviceName + "\n" + JSON.stringify(curData))
+        return
+      }
       const incomeMsg = {
         id:contentBody.messageId,
         userId:contentBody.content.userId,
