@@ -3,7 +3,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom'
 import { Menu, Icon, Layout } from 'antd';
 import menuConfig from '../../config';
-import logoURL from '../../img/logo.png';
+import logoURL from '../../img/安防.png';
 import { connect } from 'react-redux';
 import { switchMenu } from '../../redux/actions';
 const { Sider } = Layout;
@@ -164,7 +164,7 @@ class SiderBar extends React.Component {
     let name;
     const {openKeys} = this.state;
     if (!this.state.collapsed) {
-      name = <span className="name">安安运维系统</span>;
+      name = <span className="name">智慧安防系统</span>;
     }
     return (
       <Sider style={{overflow:'scroll'}} collapsible collapsed={this.state.collapsed} onCollapse={this.onCollapse}>
