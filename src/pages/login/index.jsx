@@ -175,27 +175,29 @@ class Login extends React.Component {
 
   mapMenu = (inputArr) => {
     return inputArr.reduce((pre,item)=>{
-      if(!item.subMenu){
-        const data = {}
-        data.title = item.menuName
-        data.key = item.url
-        data.icon = item.icon
-        data.menuCode = item.menuCode
-        data.number = item.number
-        data.remark = item.remark
-        data.parentMenu = item.parentMenu
-        pre.push(data)
-      }else{
-        const data = {}
-        data.title = item.menuName
-        data.key = item.url
-        data.icon = item.icon
-        data.menuCode = item.menuCode
-        data.number = item.number
-        data.remark = item.remark
-        data.parentMenu = item.parentMenu
-        data.children = this.mapMenu(item.subMenu)
-        pre.push(data)
+      if (!item.url.startsWith("/uas") && !item.url.startsWith("/yxgl")) {
+        if(!item.subMenu){
+          const data = {}
+          data.title = item.menuName
+          data.key = item.url
+          data.icon = item.icon
+          data.menuCode = item.menuCode
+          data.number = item.number
+          data.remark = item.remark
+          data.parentMenu = item.parentMenu
+          pre.push(data)
+        }else{
+          const data = {}
+          data.title = item.menuName
+          data.key = item.url
+          data.icon = item.icon
+          data.menuCode = item.menuCode
+          data.number = item.number
+          data.remark = item.remark
+          data.parentMenu = item.parentMenu
+          data.children = this.mapMenu(item.subMenu)
+          pre.push(data)
+        }
       }
 
       return pre
@@ -288,9 +290,9 @@ class Login extends React.Component {
     const LoginForm = (
       <div className="login">
         <header className="login-header">
-          <h1>安安运维平台</h1>
-          <h1 onClick={this.goHome}>点击回到官网</h1>
-          <h1 onClick={this.goResource}>资产管理系统</h1>
+          <h1>火眼金睛——智慧安防系统</h1>
+          {/* <h1 onClick={this.goHome}>点击回到官网</h1>
+          <h1 onClick={this.goResource}>资产管理系统</h1> */}
         </header>
         <section className="login-content">
           <h2>登 录</h2>
@@ -326,7 +328,7 @@ class Login extends React.Component {
             </Form.Item>
             <Form.Item>
               <Button type="primary" htmlType="submit" className="login-form-button">登录</Button>
-              <Button type="default" className="login-form-button" onClick={this.getRegistry}>服务商注册</Button>
+              {/* <Button type="default" className="login-form-button" onClick={this.getRegistry}>服务商注册</Button> */}
             
             </Form.Item>
           </Form>
@@ -337,7 +339,7 @@ class Login extends React.Component {
     const RegistryForm = (
       <div className="login">
         <header className="login-header">
-          <h1>安安运维平台</h1>
+          <h1>火眼金睛——智慧安防系统</h1>
           <h1 onClick={this.goHome}>回到官网</h1>
         </header>
         <section className="registry-content">
